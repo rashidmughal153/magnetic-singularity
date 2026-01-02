@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true # If using installed chrome
+      # - PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable # If using installed chrome
+    # volumes:
+    #   - ./user_data:/usr/src/app/user_data # Persist data if needed

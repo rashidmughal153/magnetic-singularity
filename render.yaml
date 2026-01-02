@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: magnetic-singularity
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_VERSION
+        value: 18.16.0
+    autoDeploy: false

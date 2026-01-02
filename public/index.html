@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead Gen Bot Dashboard</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #e2e8f0;
+            --accent: #3b82f6;
+            --success: #22c55e;
+            --danger: #ef4444;
+        }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 { margin-bottom: 2rem; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-top: 0.5rem;
+            color: var(--accent);
+        }
+        .stat-label {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .controls {
+            background: var(--card);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label { display: block; margin-bottom: 0.5rem; }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #334155;
+            background: #0f172a;
+            color: white;
+            box-sizing: border-box;
+        }
+        button {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        button:hover { opacity: 0.9; }
+        .logs {
+            background: var(--card);
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 1rem; border-bottom: 1px solid #334155; }
+        th { color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Lead Gen Bot Active</h1>
+        
+        <div class="grid">
+            <div class="card">
+                <div class="stat-label">Total Leads</div>
+                <div class="stat-value" id="stat-leads">0</div>
+            </div>
+            <div class="card">
+                <div class="stat-label">Invites Sent</div>
+                <div class="stat-value" id="stat-invited">0</div>
+            </div>
+            <div class="card">
+                <div class="stat-label">Connected</div>
+                <div class="stat-value" id="stat-connected">0</div>
+            </div>
+            <div class="card">
+                <div class="stat-label">Daily Actions</div>
+                <div class="stat-value" id="stat-daily">0 / 50</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <h2>Start Campaign</h2>
+            <div class="form-group">
+                <label>LinkedIn Username</label>
+                <input type="text" id="username" placeholder="email@example.com">
+            </div>
+            <div class="form-group">
+                <label>LinkedIn Password</label>
+                <input type="password" id="password" placeholder="••••••••">
+            </div>
+            <div class="form-group">
+                <label>Search Keywords</label>
+                <input type="text" id="keywords" placeholder="e.g. CEO software house San Francisco">
+            </div>
+            <button onclick="startBot()">Run Campaign</button>
+        </div>
+
+        <div class="logs">
+            <h2>Recent Activity</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Action</th>
+                        <th>Target</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-body">
+                    <!-- Logs here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function fetchStats() {
+            const res = await fetch('/api/stats');
+            const data = await res.json();
+            document.getElementById('stat-leads').innerText = data.totalLeads;
+            document.getElementById('stat-invited').innerText = data.invited;
+            document.getElementById('stat-connected').innerText = data.connected;
+            document.getElementById('stat-daily').innerText = `${data.dailyActions} / ${data.limit}`;
+        }
+
+        async function fetchLogs() {
+            const res = await fetch('/api/logs');
+            const logs = await res.json();
+            const tbody = document.getElementById('logs-body');
+            tbody.innerHTML = logs.map(l => `
+                <tr>
+                    <td>${new Date(l.timestamp).toLocaleTimeString()}</td>
+                    <td>${l.type}</td>
+                    <td>${l.target_url}</td>
+                </tr>
+            `).join('');
+        }
+
+        async function startBot() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const keywords = document.getElementById('keywords').value;
+
+            if (!username || !password || !keywords) return alert('Fill all fields');
+
+            const res = await fetch('/api/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password, keywords })
+            });
+            const data = await res.json();
+            alert(data.message);
+        }
+
+        setInterval(() => {
+            fetchStats();
+            fetchLogs();
+        }, 5000);
+
+        fetchStats();
+        fetchLogs();
+    </script>
+</body>
+</html>
